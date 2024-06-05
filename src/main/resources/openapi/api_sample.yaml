@@ -1,0 +1,62 @@
+openapi: 3.0.3
+info:
+  title: Sample API
+  version: 1.0.0
+
+paths:
+  /book:
+    get:
+      summary: Get an item
+      operationId: getItem
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+
+components:
+  schemas:
+    Book:
+      type: object
+      required:
+        - type
+        - title
+        - authors
+      properties:
+        type:
+          $ref: '#/components/schemas/ItemType'
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        pages:
+          type: integer
+          format: int32
+
+    Movie:
+      type: object
+      required:
+        - type
+        - title
+        - director
+      properties:
+        type:
+          $ref: '#/components/schemas/ItemType'
+        title:
+          type: string
+        director:
+          type: string
+        duration:
+          type: integer
+          format: int32
+          description: Duration in minutes
+
+    ItemType:
+      type: string
+      enum:
+        - BOOK
+        - MOVIE

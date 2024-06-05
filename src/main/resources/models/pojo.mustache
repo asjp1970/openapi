@@ -1,0 +1,155 @@
+/**
+ * {{#description}}{{.}}{{/description}}{{^description}}{{classname}}{{/description}}
+ */
+
+
+public class {{classname}} {
+
+
+{{#serializableModel}}
+  private static final long serialVersionUID = 1L;
+{{/serializableModel}}
+  {{#vars}}
+    {{#isEnum}}
+    {{^isContainer}}
+{{>modelInnerEnum}}
+    {{/isContainer}}
+    {{#isContainer}}
+    {{#mostInnerItems}}
+{{>modelInnerEnum}}
+    {{/mostInnerItems}}
+    {{/isContainer}}
+    {{/isEnum}}
+
+
+  {{#required}}
+  @NotNull
+    {{#isListContainer}}
+  // {{classVarName}} is a List ({{isListContainer}})
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    {{/isListContainer}}
+  {{/required}}
+  {{^required}}
+    {{#isListContainer}}
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    {{/isListContainer}}
+    {{^isListContainer}}
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+    {{/isListContainer}}
+  {{/required}}
+  {{#hasValidation}}
+  {{#pattern}}
+  @Pattern(regexp = "{{pattern}}")
+  {{/pattern}}
+  {{#minimum}}
+  {{#maximum}}
+  @Range(min={{minimum}}, max={{maximum}})
+  {{/maximum}}
+  {{^maximum}}
+  @Range(min={{minimum}})
+  {{/maximum}}
+  {{/minimum}}
+  {{^minimum}}
+  {{#maximum}}
+  @Range(max={{maximum}})
+  {{/maximum}}
+  {{/minimum}}
+  {{/hasValidation}}
+  {{^isString}}{{^isInteger}}{{^isBoolean}}{{^isLong}}
+  @Valid
+  {{/isLong}}{{/isBoolean}}{{/isInteger}}{{/isString}}
+  private {{{datatypeWithEnum}}} {{name}};
+  {{/vars}}
+
+  {{#parent}}{{{parent}}} {{classVarName}} = null;
+
+  public {{{parent}}} get{{classname}}() {
+    return {{classVarName}};
+  }
+
+  private void set{{classname}}({{{parent}}} {{classVarName}}) {
+    this.{{classVarName}} = {{classVarName}};
+  }
+  {{/parent}}
+
+  {{#vars}}
+
+  /**
+  {{#description}}
+  * {{description}}
+  {{/description}}
+  {{^description}}
+   * Get {{name}}
+  {{/description}}
+  {{#minimum}}
+   * minimum: {{minimum}}
+  {{/minimum}}
+  {{#maximum}}
+   * maximum: {{maximum}}
+  {{/maximum}}
+  * @return {{name}}
+  **/
+  {{#useBeanValidation}}{{>beanValidation}}{{/useBeanValidation}}
+  
+  {{#vendorExtensions.extraAnnotation}}
+  {{{vendorExtensions.extraAnnotation}}}
+  {{/vendorExtensions.extraAnnotation}}
+  @JsonProperty("{{baseName}}")
+  {{^required}}
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  {{/required}}
+  public {{{datatypeWithEnum}}} {{getter}}() {
+    return {{name}};
+  }
+  {{^isReadOnly}}
+  @JsonProperty("{{baseName}}")
+  private void {{setter}}({{{datatypeWithEnum}}} {{name}}) {
+    this.{{name}} = {{name}};
+  }
+  {{/isReadOnly}}
+  {{/vars}}
+
+  {{^supportJava6}}
+  @Override
+  public boolean equals(java.lang.Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    {{#hasVars}}
+    {{classname}} {{classVarName}}Other = ({{classname}}) o;
+    return true{{^isString}}{{^isInteger}} &&{{/isInteger}}{{/isString}}
+      {{#vars}}
+      {{! Here we are not using hasMore directive to conditionally add AND operation (&&) after every attribute of the
+       object being compared, except for the last one, because after bumping the version of
+       openapi-generator-maven-plugin from 4.0.2 to 7.6.0 this directive seems to have stopeed working (it was
+       undefined, neither true nor false) }}
+      {{#vendorExtensions.x-ignoreCase}}(this.{{name}} == null? {{classVarName}}Other.{{name}}==null : this.{{name}}.equalsIgnoreCase({{classVarName}}Other.{{name}})){{/vendorExtensions.x-ignoreCase}}{{^vendorExtensions.x-ignoreCase}}{{#isByteArray}}Arrays{{/isByteArray}}{{^isByteArray}}Objects{{/isByteArray}}.equals(this.{{name}}, {{classVarName}}Other.{{name}}){{/vendorExtensions.x-ignoreCase}} &&
+      {{/vars}}
+      {{#parent}} && Objects.equals(this.{{classVarName}}, {{classVarName}}Other.{{classVarName}}){{/parent}} true;
+    {{/hasVars}}
+    {{^hasVars}}
+    {{classname}} {{classVarName}}Other = ({{classname}}) o;
+    return true{{^isString}}{{^isInteger}}
+      && Objects.equals(this.vendorSpecific, {{classVarName}}Other.vendorSpecific){{/isInteger}}{{/isString}}
+    {{#parent}} && Objects.equals(this.{{classVarName}}, {{classVarName}}Other.{{classVarName}}){{/parent}};
+    {{/hasVars}}
+  }
+
+  @Override
+  public int hashCode() {
+  return 0{{^isString}}{{^isInteger}}
+      + java.util.Objects.hash({{^hasVars}}{{#parent}},{{/parent}}{{/hasVars}}
+      {{! Here we are using hasMore directive to conditionally add a "," after every attribute of the
+       object to add them to the hash function. In some version after 4.0.2 of the
+       openapi-generator-maven-plugin does not work any longer (hasMore is undefined) }}
+      {{#vars}}{{^isByteArray}}{{name}}{{/isByteArray}}{{#isByteArray}}Arrays.hashCode({{name}}){{/isByteArray}}{{#hasMore}}, {{/hasMore}}{{/vars}}
+      {{#parent}}{{#hasVars}}, {{/hasVars}}{{classVarName}}{{/parent}}){{/isInteger}}{{/isString}};
+  }
+  {{/supportJava6}}
+
+
+
+}
